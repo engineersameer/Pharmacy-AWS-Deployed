@@ -1,10 +1,13 @@
 import axios from 'axios';
+import { API_CONFIG } from '../constants/config';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://3.238.129.215:5001/api';
+// Use centralized API config
+const API_URL = API_CONFIG.BASE_URL;
 
 // Update baseURL to match new backend route
 const orderApi = axios.create({
   baseURL: `${API_URL}/customers/order`,
+  timeout: API_CONFIG.TIMEOUT,
 });
 
 orderApi.interceptors.request.use((config) => {

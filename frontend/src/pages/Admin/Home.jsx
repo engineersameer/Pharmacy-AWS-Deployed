@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { admin, API_URL } from '../../services/api';
+import { admin } from '../../services/api';
 import { useTheme } from '../../contexts/ThemeContext';
+import { API_CONFIG } from '../../constants/config';
 
 const STATUS_LABELS = {
   pending: 'Pending',
@@ -32,10 +33,8 @@ const AdminHome = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const FILE_BASE_URL = useMemo(() => {
-    const base = (API_URL || '').replace(/\/+$/, '');
-    if (!base) return import.meta.env.VITE_API_URL || 'http://3.238.129.215:5001';
-    if (base.endsWith('/api')) return base.slice(0, -4);
-    return base;
+    // Use centralized config - get base URL without /api for file serving
+    return API_CONFIG.BASE_URL_WITHOUT_API;
   }, []);
 
   const fetchOrders = async (options = { silent: false }) => {

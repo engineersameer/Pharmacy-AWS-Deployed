@@ -1,6 +1,18 @@
 // API Configuration
+// Get API URL from environment variable or use EC2 backend
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) {
+    // If environment variable is set, use it (remove trailing slash and ensure /api)
+    return envUrl.replace(/\/+$/, '') + (envUrl.endsWith('/api') ? '' : '/api');
+  }
+  // Default to EC2 backend
+  return 'http://3.238.129.215:5001/api';
+};
+
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://3.238.129.215:5001/api',
+  BASE_URL: getApiBaseUrl(),
+  BASE_URL_WITHOUT_API: getApiBaseUrl().replace(/\/api$/, ''),
   TIMEOUT: 10000,
 };
 
