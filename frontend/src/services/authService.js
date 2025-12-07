@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5001/api/auth';
+// API URL - Use environment variable or default to EC2 instance
+const API_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/api/auth` 
+  : 'http://3.238.129.215:5001/api/auth';
 
 // Create axios instance with default config
 const api = axios.create({

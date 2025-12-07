@@ -1,44 +1,41 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const Customer = require('./models/Customer');
+const initDatabase = require('./config/initDatabase');
 require('dotenv').config();
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/pharmacy';
-
 async function seedAdmin() {
-  await mongoose.connect(MONGO_URI);
+  try {
+    // Initialize database first
+    await initDatabase();
 
-  const adminPhone = '03333333333'; // Set your admin phone number here
-  const adminPassword = 'Admin@123'; // Set your admin password here
+    const adminPhone = '03333333333'; // Set your admin phone number here
+    const adminPassword = 'Admin@123'; // Set your admin password here
 
-  // Check if admin already exists
-  const existingAdmin = await Customer.findOne({ phone: adminPhone, IsAdmin: true });
-  if (existingAdmin) {
-    console.log('Admin already exists:', existingAdmin.phone);
-    await mongoose.disconnect();
-    return;
+    // Check if admin already exists
+    const existingAdmin = await Customer.findOne({ phone: adminPhone, IsAdmin: true });
+    if (existingAdmin) {
+      console.log('Admin already exists:', existingAdmin.phone);
+      process.exit(0);
+      return;
+    }
+
+    // Create admin user with all required fields
+    const admin = await Customer.create({
+      name: 'Admin', // at least 2 chars
+      age: 30, // between 18 and 100
+      gender: 'male', // must be 'male' or 'female'
+      phone: adminPhone,
+      address: 'Admin Address', // at least 10 chars
+      city: 'AdminCity', // any string
+      password: adminPassword, // plain password, will be hashed by create method
+      IsAdmin: true
+    });
+
+    console.log('Admin user created:', admin.phone);
+    process.exit(0);
+  } catch (err) {
+    console.error('Error seeding admin:', err);
+    process.exit(1);
   }
-
-  // No manual hashing here; let the model hash the password
-
-  // Create admin user with all required fields
-  const admin = new Customer({
-    name: 'Admin', // at least 2 cha
-    age: 30, // between 18 and 100
-    gender: 'male', // must be 'male' or 'female'
-    phone: adminPhone,
-    address: 'Admin Address', // at least 10 chars
-    city: 'AdminCity', // any string
-    password: adminPassword, // plain password, will be hashed by pre-save hook
-    IsAdmin: true
-  });
-
-  await admin.save();
-  console.log('Admin user created:', admin.phone);
-  await mongoose.disconnect();
 }
 
-seedAdmin().catch(err => {
-  console.error('Error seeding admin:', err);
-  mongoose.disconnect();
-});
+seedAdmin();

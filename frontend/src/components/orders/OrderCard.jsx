@@ -5,7 +5,9 @@ import { updateOrder, deleteOrder } from '../../services/orderService';
 const PrescriptionViewer = ({ filePath, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const fileUrl = `http://localhost:5001${filePath}`;
+  // Get base URL from environment or use EC2 URL
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://3.238.129.215:5001';
+  const fileUrl = `${baseUrl}${filePath}`;
   const isPDF = filePath.toLowerCase().endsWith('.pdf');
 
   const handleError = () => {
