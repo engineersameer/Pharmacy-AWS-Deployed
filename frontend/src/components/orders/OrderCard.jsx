@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { updateOrder, deleteOrder } from '../../services/orderService';
+import { API_CONFIG } from '../../constants/config';
 
 const PrescriptionViewer = ({ filePath, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  // Get base URL from environment or use EC2 URL
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://3.238.129.215:5001';
+  // Get base URL from centralized config (without /api for file serving)
+  const baseUrl = API_CONFIG.BASE_URL_WITHOUT_API;
   const fileUrl = `${baseUrl}${filePath}`;
   const isPDF = filePath.toLowerCase().endsWith('.pdf');
 

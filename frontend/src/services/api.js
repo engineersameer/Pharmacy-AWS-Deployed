@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_CONFIG } from '../constants/config';
 
-// API URL configuration
-export const API_URL = import.meta.env.VITE_API_URL || 'http://3.238.129.215:5001/api';
+// API URL configuration - use centralized config
+export const API_URL = API_CONFIG.BASE_URL;
 
 // Create axios instance with default config
 const api = axios.create({
@@ -9,6 +10,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: API_CONFIG.TIMEOUT,
 });
 
 // Request interceptor for adding auth token

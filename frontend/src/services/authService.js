@@ -1,9 +1,8 @@
 import axios from 'axios';
+import { API_CONFIG } from '../constants/config';
 
-// API URL - Use environment variable or default to EC2 instance
-const API_URL = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL}/api/auth` 
-  : 'http://3.238.129.215:5001/api/auth';
+// API URL - Use centralized config
+const API_URL = `${API_CONFIG.BASE_URL}/auth`;
 
 // Create axios instance with default config
 const api = axios.create({
@@ -12,7 +11,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   // Add timeout
-  timeout: 10000,
+  timeout: API_CONFIG.TIMEOUT,
 });
 
 // Add a test function
