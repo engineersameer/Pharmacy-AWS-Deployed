@@ -1,9 +1,10 @@
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
+const initDatabase = require('./config/initDatabase');
+const pool = require('./config/database');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -89,30 +90,39 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Connect to MongoDB
-console.log('\nAttempting to connect to MongoDB...');
-console.log('MongoDB URI:', process.env.MONGO_URI ? '(URI is set)' : '(URI is missing!)');
+// Initialize and connect to MySQL
+console.log('\n🔌 Attempting to connect to MySQL...');
+console.log('📍 DB Host:', process.env.DB_HOST || 'localhost');
+console.log('📊 DB Name:', process.env.DB_NAME || 'pharmacy_db');
+console.log('🔒 SSL:', process.env.DB_SSL === 'true' ? 'Enabled' : 'Disabled');
 
-mongoose.connect(process.env.MONGO_URI)
+initDatabase()
   .then(() => {
-    console.log('Connected to MongoDB successfully');
+    // Test connection
+    return pool.getConnection();
+  })
+  .then((connection) => {
+    console.log('✅ Connected to MySQL successfully');
+    connection.release();
     
     // Start server only after successful database connection
     const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => {
       console.log(`
-=================================
-🚀 Server is running
-📡 Port: ${PORT}
-🌍 Mode: ${process.env.NODE_ENV || 'development'}
-💾 Database: Connected
-🔑 JWT Secret: ${process.env.JWT_SECRET ? '(set)' : '(missing!)'}
-=================================
+╔═══════════════════════════════════════╗
+║     🚀 Server is Running              ║
+╠═══════════════════════════════════════╣
+║  📡 Port:        ${PORT.toString().padEnd(25)}║
+║  🌍 Mode:        ${(process.env.NODE_ENV || 'development').padEnd(25)}║
+║  💾 Database:    MySQL (RDS)          ║
+║  🔑 JWT Secret:  ${process.env.JWT_SECRET ? '✅ Set'.padEnd(25) : '❌ Missing!'.padEnd(25)}║
+║  🌐 Frontend:    http://localhost:5173║
+╚═══════════════════════════════════════╝
       `);
     });
   })
   .catch((error) => {
-    console.error('MongoDB connection error:', error);
+    console.error('MySQL connection error:', error);
     process.exit(1);
   });
 

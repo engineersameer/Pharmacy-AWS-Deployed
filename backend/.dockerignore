@@ -1,0 +1,44 @@
+# Docker ignore file
+# Yeh files Docker image mein include nahi hongi (size kam karne ke liye)
+
+# Dependencies (container mein install honge)
+node_modules/
+npm-debug.log
+
+# Environment files (runtime par pass karenge)
+.env
+.env.local
+
+# Git files
+.git/
+.gitignore
+
+# Documentation
+*.md
+README.md
+MIGRATION_GUIDE.md
+RDS_SETUP.md
+RDS_CONFIGURATION.md
+TROUBLESHOOTING.md
+QUICK_FIX.md
+SETUP_INSTRUCTIONS.md
+
+# Test files
+test/
+tests/
+*.test.js
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+

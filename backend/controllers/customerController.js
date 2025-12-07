@@ -8,7 +8,7 @@ const Order = require('../models/Order');
 // --- Customer Profile Controllers ---
 const getProfile = async (req, res) => {
   try {
-    const customer = await Customer.findById(req.user.id).select('-password');
+    const customer = await Customer.findById(req.user.id);
     if (!customer) {
       return res.status(404).json({ success: false, message: 'Customer not found' });
     }
@@ -28,23 +28,22 @@ const updateProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Customer not found' });
     }
     if (phone && phone !== customer.phone) {
-      const phoneExists = await Customer.findOne({ phone, _id: { $ne: customerId } });
-      if (phoneExists) {
+      const phoneExists = await Customer.findOne({ phone });
+      if (phoneExists && String(phoneExists.id) !== String(customerId)) {
         return res.status(400).json({ success: false, message: 'Phone number is already in use' });
       }
     }
-    customer.name = name || customer.name;
-    customer.age = age || customer.age;
-    customer.gender = gender || customer.gender;
-    customer.phone = phone || customer.phone;
-    customer.address = address || customer.address;
-    customer.city = city || customer.city;
-    if (password) {
-      const salt = await bcrypt.genSalt(10);
-      customer.password = await bcrypt.hash(password, salt);
-    }
-    await customer.save();
-    const updatedCustomer = await Customer.findById(customerId).select('-password');
+    
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (age) updateData.age = age;
+    if (gender) updateData.gender = gender;
+    if (phone) updateData.phone = phone;
+    if (address) updateData.address = address;
+    if (city) updateData.city = city;
+    if (password) updateData.password = password;
+    
+    const updatedCustomer = await Customer.findByIdAndUpdate(customerId, updateData, { new: true });
     res.json({ success: true, message: 'Profile updated successfully', data: updatedCustomer });
   } catch (error) {
     console.error('Update Profile Error:', error);
@@ -89,7 +88,7 @@ const createOrder = async (req, res, next) => {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'Prescription file is required' });
     }
-    const newOrder = new Order({
+    const newOrder = await Order.create({
       receiverName,
       phone,
       address,
@@ -97,7 +96,6 @@ const createOrder = async (req, res, next) => {
       status: 'pending',
       userId
     });
-    await newOrder.save();
     res.status(201).json({ success: true, message: 'Order placed successfully and is pending review', data: newOrder });
   } catch (error) {
     console.error('Error creating order:', error);
@@ -111,7 +109,7 @@ const getCustomerOrders = async (req, res, next) => {
     if (req.user.id !== userId) {
       return res.status(403).json({ success: false, message: 'Access denied. You can only view your own orders' });
     }
-    const orders = await Order.find({ userId }).sort('-createdAt');
+    const orders = await Order.find({ userId, sort: '-createdAt' });
     res.json({ success: true, data: orders });
   } catch (error) {
     console.error('Error fetching customer orders:', error);
@@ -127,17 +125,19 @@ const updateOrder = async (req, res, next) => {
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
-    if (order.userId.toString() !== req.user.id) {
+    const userId = typeof order.userId === 'object' ? order.userId.id || order.userId._id : order.userId;
+    if (userId.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Access denied. You can only update your own orders' });
     }
     if (order.status !== 'pending') {
       return res.status(400).json({ success: false, message: 'Only pending orders can be updated' });
     }
-    order.receiverName = receiverName || order.receiverName;
-    order.phone = phone || order.phone;
-    order.address = address || order.address;
-    await order.save();
-    res.json({ success: true, message: 'Order updated successfully', data: order });
+    const updateData = {};
+    if (receiverName) updateData.receiverName = receiverName;
+    if (phone) updateData.phone = phone;
+    if (address) updateData.address = address;
+    const updatedOrder = await Order.findByIdAndUpdate(orderId, updateData, { new: true });
+    res.json({ success: true, message: 'Order updated successfully', data: updatedOrder });
   } catch (error) {
     console.error('Error updating order:', error);
     next(error);
@@ -151,7 +151,8 @@ const deleteOrder = async (req, res, next) => {
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
-    if (order.userId.toString() !== req.user.id) {
+    const userId = typeof order.userId === 'object' ? order.userId.id || order.userId._id : order.userId;
+    if (userId.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Access denied. You can only delete your own orders' });
     }
     if (order.status !== 'pending') {
@@ -161,7 +162,7 @@ const deleteOrder = async (req, res, next) => {
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
-    await order.deleteOne();
+    await Order.deleteOne({ _id: orderId });
     res.json({ success: true, message: 'Order deleted successfully' });
   } catch (error) {
     console.error('Error deleting order:', error);

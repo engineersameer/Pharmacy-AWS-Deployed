@@ -33,7 +33,7 @@ const AdminHome = () => {
 
   const FILE_BASE_URL = useMemo(() => {
     const base = (API_URL || '').replace(/\/+$/, '');
-    if (!base) return 'http://localhost:5001';
+    if (!base) return import.meta.env.VITE_API_URL || 'http://3.238.129.215:5001';
     if (base.endsWith('/api')) return base.slice(0, -4);
     return base;
   }, []);

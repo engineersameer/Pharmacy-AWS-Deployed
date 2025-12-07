@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://3.238.129.215:5001/api';
 
 // Update baseURL to match new backend route
 const orderApi = axios.create({

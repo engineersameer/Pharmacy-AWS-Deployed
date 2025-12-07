@@ -57,7 +57,7 @@ const AdminOrderCard = ({ order, onStatusChange }) => {
       <div>
         <span className="font-bold">Prescription:</span>{' '}
         {order.filePath ? (
-          <a href={`http://localhost:5001${order.filePath}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 underline">View</a>
+          <a href={`${import.meta.env.VITE_API_URL || 'http://3.238.129.215:5001'}${order.filePath}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 underline">View</a>
         ) : 'N/A'}
       </div>
       {error && <div className="mt-2 text-red-600">{error}</div>}

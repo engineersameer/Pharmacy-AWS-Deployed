@@ -1,0 +1,36 @@
+# Elastic Beanstalk ignore file
+# Exclude development files and folders
+
+node_modules/
+.git/
+.gitignore
+.env.local
+.env.development
+.env.test
+*.log
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Exclude source files (we only need the built dist folder)
+src/
+public/
+*.config.js
+eslint.config.js
+postcss.config.js
+tailwind.config.js
+vite.config.js
+index.html
+
+# Exclude development documentation
+README.md
+
+# Keep these for deployment:
+# - package.json (needed for npm install)
+# - package-lock.json (needed for exact dependency versions)
+# - server.js (needed to serve the app)
+# - dist/ (the built application)
+

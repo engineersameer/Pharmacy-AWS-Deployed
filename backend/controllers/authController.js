@@ -59,13 +59,13 @@ exports.signupCustomer = async (req, res) => {
     });
 
     console.log('Customer created successfully:', {
-      id: customer._id,
+      id: customer.id || customer._id,
       name: customer.name,
       phone: customer.phone
     });
 
     // Generate token
-    const token = generateToken(customer._id);
+    const token = generateToken(customer.id || customer._id);
 
     console.log('Generated JWT token');
     console.log('=== Signup Process Complete ===\n');
@@ -74,7 +74,7 @@ exports.signupCustomer = async (req, res) => {
       success: true,
       message: 'Customer registered successfully',
       data: {
-        _id: customer._id,
+        _id: customer.id || customer._id,
         name: customer.name,
         phone: customer.phone,
         token
@@ -86,8 +86,8 @@ exports.signupCustomer = async (req, res) => {
     console.error('Error Message:', error.message);
     console.error('Stack Trace:', error.stack);
 
-    // Handle mongoose validation errors
-    if (error.name === 'ValidationError') {
+    // Handle validation errors
+    if (error.name === 'ValidationError' || error.code === 'ER_DUP_ENTRY') {
       const messages = Object.values(error.errors).map(err => err.message);
       console.error('Validation Errors:', messages);
       return res.status(400).json({
@@ -129,8 +129,8 @@ exports.signinCustomer = async (req, res) => {
       });
     }
 
-    // Find customer by phone and explicitly select password
-    const customer = await Customer.findOne({ phone }).select('+password');
+    // Find customer by phone with password
+    const customer = await Customer.findOne({ phone }, '+password');
 
     // Check if customer exists
     if (!customer) {
@@ -141,7 +141,7 @@ exports.signinCustomer = async (req, res) => {
     }
 
     // Check if password matches
-    const isMatch = await customer.comparePassword(password);
+    const isMatch = await Customer.comparePassword(password, customer.password);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
@@ -152,13 +152,13 @@ exports.signinCustomer = async (req, res) => {
     // Set role for JWT and response
     const role = customer.IsAdmin ? 'admin' : 'customer';
     // Generate token with role
-    const token = generateToken(customer._id, role);
+    const token = generateToken(customer.id || customer._id, role);
 
     res.json({
       success: true,
       message: 'Signed in successfully',
       data: {
-        _id: customer._id,
+        _id: customer.id || customer._id,
         name: customer.name,
         phone: customer.phone,
         IsAdmin: customer.IsAdmin,
@@ -191,7 +191,7 @@ exports.getCustomerProfile = async (req, res) => {
     res.json({
       success: true,
       data: {
-        _id: customer._id,
+        _id: customer.id || customer._id,
         name: customer.name,
         age: customer.age,
         gender: customer.gender,
